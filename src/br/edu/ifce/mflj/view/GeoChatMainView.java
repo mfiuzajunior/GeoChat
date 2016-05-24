@@ -1,5 +1,8 @@
 package br.edu.ifce.mflj.view;
 
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -12,7 +15,7 @@ import javax.swing.event.ChangeListener;
 
 import br.edu.ifce.mflj.services.UsuarioService;
 
-public class GeoChatMainView extends JFrame implements ChangeListener {
+public class GeoChatMainView extends JFrame implements ChangeListener, WindowListener {
 
 	private static final long serialVersionUID = 2282089787721299410L;
 
@@ -259,8 +262,10 @@ public class GeoChatMainView extends JFrame implements ChangeListener {
 
 		add( getLabelRaio() );
 		add( getRaio() );
-		
+
 		repaint();
+
+		addWindowListener( this );
 	}
 
 	@Override
@@ -280,10 +285,36 @@ public class GeoChatMainView extends JFrame implements ChangeListener {
 			getMapa().repaint();
 		}
 
-		usuarioService.atualizarPosicao( apelido, latitude.getValue(), longitude.getValue(), raio.getValue() );
+		usuarioService.atualizarPosicao(	apelido,
+											String.format( "%s", latitude.getValue() ),
+											String.format( "%s", longitude.getValue() ),
+											String.format( "%s", raio.getValue() ) );
 	}
 
 	public static void main(String[] args) {
 		new GeoChatMainView().inicializarInterfaceGrafica();
 	}
+
+	@Override
+	public void windowOpened(WindowEvent e) {}
+
+	@Override
+	public void windowClosing(WindowEvent e){
+		usuarioService.sair( apelido );
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e){}
+
+	@Override
+	public void windowIconified(WindowEvent e){}
+
+	@Override
+	public void windowDeiconified(WindowEvent e){}
+
+	@Override
+	public void windowActivated(WindowEvent e){}
+
+	@Override
+	public void windowDeactivated(WindowEvent e){}
 }

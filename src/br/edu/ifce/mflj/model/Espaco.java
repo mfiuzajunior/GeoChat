@@ -86,12 +86,4 @@ public class Espaco {
 
 		return null;
 	}
-
-	public static void main(String[] args) {
-		Espaco espaco = new Espaco();
-		Tupla t = new Tupla();
-		t.de = "fiuza";
-		espaco.escreverTupla( t, 0 );
-		System.out.println("");
-	}
 }

@@ -7,19 +7,19 @@ public class Tupla implements Entry {
 
 	public String	de,
 					para,
-					status,
 					latitude,
-					longitude;
+					longitude,
+					raio;
 
 	public Tupla(){}
 
-	public Tupla( String de, String para, String status, String latitude, String longitude ){
+	public Tupla( String de, String para, String latitude, String longitude, String raio ){
 		super();
 
 		this.de			= de;
 		this.para		= para;
-		this.status		= status;
 		this.latitude	= latitude;
 		this.longitude	= longitude;
+		this.raio		= raio;
 	}
 }
