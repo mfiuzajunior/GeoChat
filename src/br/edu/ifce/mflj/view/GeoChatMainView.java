@@ -3,20 +3,15 @@ package br.edu.ifce.mflj.view;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-/**
- * @author fiuza
- *
- */
-/**
- * @author fiuza
- *
- */
+import br.edu.ifce.mflj.services.UsuarioService;
+
 public class GeoChatMainView extends JFrame implements ChangeListener {
 
 	private static final long serialVersionUID = 2282089787721299410L;
@@ -34,8 +29,17 @@ public class GeoChatMainView extends JFrame implements ChangeListener {
 								raio;
 	private Mapa				mapa;
 
+	private String				apelido;
+
 	private	ListaDeUsuarios		listaDeUsuarios;
 	private	LogDeMensagens		logDeMensagens;
+
+	private UsuarioService		usuarioService;
+
+	public GeoChatMainView(){
+		super();
+		usuarioService = new UsuarioService();
+	}
 
 	public Mapa getMapa() {
 		if( mapa == null ){
@@ -222,12 +226,24 @@ public class GeoChatMainView extends JFrame implements ChangeListener {
 	}
 
 	public void inicializarInterfaceGrafica(){
+		do {
+			apelido = JOptionPane.showInputDialog( this, "Como deseja ser chamado?", "Bem vindo", JOptionPane.QUESTION_MESSAGE );
+			if( apelido == null ){
+				System.exit( 0 );
+			} else if( usuarioService.usuarioExiste( apelido ) ){
+				JOptionPane.showMessageDialog( this, "Usuário já logado", "Atenção", JOptionPane.INFORMATION_MESSAGE );
+				apelido = "";
+			}
+		} while( apelido.equals( "" ) );
+
+		usuarioService.logarUsuario( apelido );
+
 		setResizable( false );
 		setBounds( 100, 100, 950, 700 );
 		setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
 		getContentPane().setLayout( null );
 		setVisible( true );
-		setTitle( "Seja bem vindo" );
+		setTitle( "Seja bem vindo " + apelido );
 
 		add( getScrollLogDeMensagens() );
 		add( getMapa() );
@@ -247,10 +263,6 @@ public class GeoChatMainView extends JFrame implements ChangeListener {
 		repaint();
 	}
 
-	public static void main(String[] args) {
-		new GeoChatMainView().inicializarInterfaceGrafica();
-	}
-
 	@Override
 	public void stateChanged(ChangeEvent changeEvent) {
 		if( changeEvent.getSource().equals( latitude ) ){
@@ -268,5 +280,10 @@ public class GeoChatMainView extends JFrame implements ChangeListener {
 			getMapa().repaint();
 		}
 
+		usuarioService.atualizarPosicao( apelido, latitude.getValue(), longitude.getValue(), raio.getValue() );
+	}
+
+	public static void main(String[] args) {
+		new GeoChatMainView().inicializarInterfaceGrafica();
 	}
 }
