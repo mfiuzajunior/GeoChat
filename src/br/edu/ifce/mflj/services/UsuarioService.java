@@ -7,15 +7,18 @@ import net.jini.core.lease.Lease;
 import br.edu.ifce.mflj.model.Espaco;
 import br.edu.ifce.mflj.model.Tupla;
 
-public class UsuarioService {
+public class UsuarioService implements Runnable {
 
 	private Espaco espaco;
 
 	private String usuario;
 
-	public UsuarioService( String usuario ){
+	public UsuarioService(){
 		espaco = Espaco.getInstancia();
+		new Thread( this ).start();
+	}
 
+	public void setUsuario( String usuario ){
 		this.usuario = usuario;
 	}
 
@@ -65,5 +68,10 @@ public class UsuarioService {
 		while( (Tupla) espaco.lerTupla( tupla ) != null ){
 			espaco.retirarTupla( tupla );
 		}
+	}
+
+	@Override
+	public void run() {
+		List<Tupla> tuplasObtidas = new ArrayList<Tupla>();
 	}
 }

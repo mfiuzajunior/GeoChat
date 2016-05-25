@@ -233,13 +233,16 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 			apelido = JOptionPane.showInputDialog( this, "Como deseja ser chamado?", "Bem vindo", JOptionPane.QUESTION_MESSAGE );
 			if( apelido == null ){
 				System.exit( 0 );
-			} else if( usuarioService.usuarioExiste( apelido ) ){
-				JOptionPane.showMessageDialog( this, "Usuário já logado", "Atenção", JOptionPane.INFORMATION_MESSAGE );
-				apelido = "";
+			} else {
+				usuarioService.setUsuario( apelido );
+				if( usuarioService.usuarioExiste() ){
+					JOptionPane.showMessageDialog( this, "Usuário já logado", "Atenção", JOptionPane.INFORMATION_MESSAGE );
+					apelido = "";
+				}
 			}
 		} while( apelido.equals( "" ) );
 
-		usuarioService.logarUsuario( apelido );
+		usuarioService.logarUsuario();
 
 		setResizable( false );
 		setBounds( 100, 100, 950, 700 );
@@ -285,8 +288,7 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 			getMapa().repaint();
 		}
 
-		usuarioService.atualizarPosicao(	apelido,
-											String.format( "%s", latitude.getValue() ),
+		usuarioService.atualizarPosicao(	String.format( "%s", latitude.getValue() ),
 											String.format( "%s", longitude.getValue() ),
 											String.format( "%s", raio.getValue() ) );
 	}
@@ -300,7 +302,7 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 
 	@Override
 	public void windowClosing(WindowEvent e){
-		usuarioService.sair( apelido );
+		usuarioService.sair();
 	}
 
 	@Override
