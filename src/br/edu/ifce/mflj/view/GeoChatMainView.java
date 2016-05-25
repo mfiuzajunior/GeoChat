@@ -13,6 +13,7 @@ import javax.swing.JTextArea;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import br.edu.ifce.mflj.model.Usuario;
 import br.edu.ifce.mflj.services.UsuarioService;
 
 public class GeoChatMainView extends JFrame implements ChangeListener, WindowListener {
@@ -41,7 +42,7 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 
 	public GeoChatMainView(){
 		super();
-		usuarioService = new UsuarioService();
+		usuarioService = new UsuarioService( new Usuario() );
 	}
 
 	public Mapa getMapa() {
@@ -234,7 +235,7 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 			if( apelido == null ){
 				System.exit( 0 );
 			} else {
-				usuarioService.setUsuario( apelido );
+				usuarioService.getUsuario().setApelido( apelido );
 				if( usuarioService.usuarioExiste() ){
 					JOptionPane.showMessageDialog( this, "Usuário já logado", "Atenção", JOptionPane.INFORMATION_MESSAGE );
 					apelido = "";
@@ -274,23 +275,27 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 	@Override
 	public void stateChanged(ChangeEvent changeEvent) {
 		if( changeEvent.getSource().equals( latitude ) ){
+			usuarioService.getUsuario().setLatitude( String.format( "%s", latitude.getValue() ) );
+
 			getMapa().setLatitude( latitude.getValue() );
 			getMapa().repaint();
 		}
 
 		if( changeEvent.getSource().equals( longitude ) ){
+			usuarioService.getUsuario().setLongitude( String.format( "%s", longitude.getValue() ) );
+
 			getMapa().setLongitude( longitude.getValue() );
 			getMapa().repaint();
 		}
 
 		if( changeEvent.getSource().equals( raio ) ){
+			usuarioService.getUsuario().setRaio( String.format( "%s", raio.getValue() ) );
+
 			getMapa().setRaio( raio.getValue() );
 			getMapa().repaint();
 		}
 
-		usuarioService.atualizarPosicao(	String.format( "%s", latitude.getValue() ),
-											String.format( "%s", longitude.getValue() ),
-											String.format( "%s", raio.getValue() ) );
+		usuarioService.atualizarPosicao();
 	}
 
 	public static void main(String[] args) {
