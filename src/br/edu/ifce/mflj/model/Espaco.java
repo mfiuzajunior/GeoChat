@@ -58,8 +58,6 @@ public class Espaco {
 			return javaSpace.take( tupla, null, 0 );
 
 		} catch (RemoteException e) {
-			System.err.println("RemoteException");
-
 		} catch (UnusableEntryException e) {
 			System.err.println("UnusableEntryException");
 

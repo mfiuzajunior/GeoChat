@@ -2,8 +2,9 @@ package br.edu.ifce.mflj.model;
 
 public class Usuario {
 
-	private String	apelido,
-					latitude,
+	private String	apelido;
+
+	private int		latitude,
 					longitude,
 					raio;
 
@@ -21,52 +22,27 @@ public class Usuario {
 		this.apelido = apelido;
 	}
 
-	public String getLatitude() {
-		return latitude == null ? "0" : latitude;
+	public int getLatitude() {
+		return latitude;
 	}
 
-	public void setLatitude(String latitude) {
+	public void setLatitude(int latitude) {
 		this.latitude = latitude;
 	}
 
-	public String getLongitude() {
-		return longitude == null ? "0" : longitude;
+	public int getLongitude() {
+		return longitude;
 	}
 
-	public void setLongitude(String longitude) {
+	public void setLongitude(int longitude) {
 		this.longitude = longitude;
 	}
 
-	public String getRaio() {
-		return raio == null ? "0" : raio;
+	public int getRaio() {
+		return raio;
 	}
 
-	public void setRaio(String raio) {
+	public void setRaio(int raio) {
 		this.raio = raio;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((apelido == null) ? 0 : apelido.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Usuario other = (Usuario) obj;
-		if (apelido == null) {
-			if (other.apelido != null)
-				return false;
-		} else if (!apelido.equals(other.apelido))
-			return false;
-		return true;
 	}
 }

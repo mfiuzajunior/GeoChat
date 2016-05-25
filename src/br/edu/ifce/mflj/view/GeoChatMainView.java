@@ -1,5 +1,7 @@
 package br.edu.ifce.mflj.view;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
@@ -13,10 +15,15 @@ import javax.swing.JTextArea;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import br.edu.ifce.mflj.model.Mensagem;
 import br.edu.ifce.mflj.model.Usuario;
+import br.edu.ifce.mflj.observer.CoordenadasListener;
+import br.edu.ifce.mflj.observer.MensagemListener;
+import br.edu.ifce.mflj.services.CoordenadasService;
+import br.edu.ifce.mflj.services.MensagemService;
 import br.edu.ifce.mflj.services.UsuarioService;
 
-public class GeoChatMainView extends JFrame implements ChangeListener, WindowListener {
+public class GeoChatMainView extends JFrame implements ChangeListener, WindowListener, ActionListener, MensagemListener, CoordenadasListener {
 
 	private static final long serialVersionUID = 2282089787721299410L;
 
@@ -39,10 +46,17 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 	private	LogDeMensagens		logDeMensagens;
 
 	private UsuarioService		usuarioService;
+	private MensagemService		mensagemService;
+	private CoordenadasService	coordenadasService;
 
 	public GeoChatMainView(){
 		super();
-		usuarioService = new UsuarioService( new Usuario() );
+		usuarioService		= new UsuarioService( new Usuario() );
+		mensagemService		= new MensagemService( new Usuario() );
+		coordenadasService	= new CoordenadasService( new Usuario() );
+
+		mensagemService.addMensagemListener( this );
+		coordenadasService.addCoordenadasListener( this );
 	}
 
 	public Mapa getMapa() {
@@ -108,6 +122,7 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 			botaoEnviarMensagem.setBounds(	( getScrollEditorDeMensagens().getX() + getScrollEditorDeMensagens().getWidth() ) - 117, 
 											getScrollEditorDeMensagens().getY() + getScrollEditorDeMensagens().getHeight() + 5,
 											117, 25 );
+			botaoEnviarMensagem.addActionListener( this );
 		}
 		return botaoEnviarMensagem;
 	}
@@ -119,6 +134,7 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 	public JTextArea getTextEditorDeMensagens() {
 		if( textEditorDeMensagens == null ){
 			textEditorDeMensagens = new JTextArea();
+			textEditorDeMensagens.setEditable( true );
 		}
 		return textEditorDeMensagens;
 	}
@@ -236,6 +252,9 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 				System.exit( 0 );
 			} else {
 				usuarioService.getUsuario().setApelido( apelido );
+				mensagemService.getUsuario().setApelido( apelido );
+				coordenadasService.getUsuario().setApelido( apelido );
+
 				if( usuarioService.usuarioExiste() ){
 					JOptionPane.showMessageDialog( this, "Usuário já logado", "Atenção", JOptionPane.INFORMATION_MESSAGE );
 					apelido = "";
@@ -244,6 +263,7 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 		} while( apelido.equals( "" ) );
 
 		usuarioService.logarUsuario();
+//		getListaDeUsuarios().adicionarUsuarios( usuarioService.usuariosLogados() );
 
 		setResizable( false );
 		setBounds( 100, 100, 950, 700 );
@@ -270,32 +290,69 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 		repaint();
 
 		addWindowListener( this );
+
+		new Thread( mensagemService ).start();
+		new Thread( coordenadasService ).start();
 	}
 
 	@Override
 	public void stateChanged(ChangeEvent changeEvent) {
 		if( changeEvent.getSource().equals( latitude ) ){
-			usuarioService.getUsuario().setLatitude( String.format( "%s", latitude.getValue() ) );
+			coordenadasService.getUsuario().setLatitude( latitude.getValue() );
 
 			getMapa().setLatitude( latitude.getValue() );
 			getMapa().repaint();
+
+			if( !latitude.getValueIsAdjusting() ){
+				coordenadasService.salvarCoordenadas();
+			}
 		}
 
 		if( changeEvent.getSource().equals( longitude ) ){
-			usuarioService.getUsuario().setLongitude( String.format( "%s", longitude.getValue() ) );
+			coordenadasService.getUsuario().setLongitude( longitude.getValue() );
 
 			getMapa().setLongitude( longitude.getValue() );
 			getMapa().repaint();
+
+			if( !longitude.getValueIsAdjusting() ){
+				coordenadasService.salvarCoordenadas();
+			}
 		}
 
 		if( changeEvent.getSource().equals( raio ) ){
-			usuarioService.getUsuario().setRaio( String.format( "%s", raio.getValue() ) );
+			coordenadasService.getUsuario().setRaio( raio.getValue() );
 
 			getMapa().setRaio( raio.getValue() );
 			getMapa().repaint();
 		}
+	}
 
-		usuarioService.atualizarPosicao();
+	@Override
+	public void windowOpened( WindowEvent windowEvent ){}
+	@Override
+	public void windowClosed( WindowEvent windowEvent ){}
+	@Override
+	public void windowIconified( WindowEvent windowEvent ){}
+	@Override
+	public void windowDeiconified( WindowEvent windowEvent ){}
+	@Override
+	public void windowActivated( WindowEvent windowEvent ){}
+	@Override
+	public void windowDeactivated( WindowEvent windowEvent ){}
+
+	@Override
+	public void windowClosing( WindowEvent windowEvent ){
+		usuarioService.sair();
+	}
+
+	@Override
+	public void actionPerformed( ActionEvent actionEvent ) {
+		if( listaDeUsuarios.getSelectedIndex() == -1 ){
+			JOptionPane.showMessageDialog( this, "Por favor, selecione um usuário", "Atenção", JOptionPane.WARNING_MESSAGE );
+		} else if( textEditorDeMensagens.getText() != null && !textEditorDeMensagens.getText().equals( "" ) ){
+			mensagemService.enviarMensagem( listaDeUsuarios.getSelectedValue(), textEditorDeMensagens.getText() );
+			textEditorDeMensagens.setText("");
+		}
 	}
 
 	public static void main(String[] args) {
@@ -303,25 +360,27 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 	}
 
 	@Override
-	public void windowOpened(WindowEvent e) {}
-
-	@Override
-	public void windowClosing(WindowEvent e){
-		usuarioService.sair();
+	public void novaMensagem( Mensagem mensagem ){
+		getLogDeMensagens().append( String.format( "%s: %s\n", mensagem.de, mensagem.mensagem ) );
 	}
 
 	@Override
-	public void windowClosed(WindowEvent e){}
+	public void perto(String apelido) {
+		for( int indx = 0; indx < listaDeUsuarios.getUsuarios().getSize(); indx++ ){
+			if( listaDeUsuarios.getUsuarios().get( indx ).equals( apelido ) ){
+				listaDeUsuarios.getUsuarios().set( indx, apelido );
+				return;
+			}
+		}
+		listaDeUsuarios.adicionarUsuario( apelido );
+	}
 
 	@Override
-	public void windowIconified(WindowEvent e){}
-
-	@Override
-	public void windowDeiconified(WindowEvent e){}
-
-	@Override
-	public void windowActivated(WindowEvent e){}
-
-	@Override
-	public void windowDeactivated(WindowEvent e){}
+	public void longe(String apelido) {
+		for( int indx = 0; indx < listaDeUsuarios.getUsuarios().getSize(); indx++ ){
+			if( listaDeUsuarios.getUsuarios().get( indx ).equals( apelido ) ){
+				listaDeUsuarios.getUsuarios().set( indx, String.format( "%s (offline)", apelido ) );
+			}
+		}
+	}
 }
