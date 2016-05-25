@@ -263,7 +263,6 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 		} while( apelido.equals( "" ) );
 
 		usuarioService.logarUsuario();
-//		getListaDeUsuarios().adicionarUsuarios( usuarioService.usuariosLogados() );
 
 		setResizable( false );
 		setBounds( 100, 100, 950, 700 );
@@ -372,7 +371,9 @@ public class GeoChatMainView extends JFrame implements ChangeListener, WindowLis
 				return;
 			}
 		}
-		listaDeUsuarios.adicionarUsuario( apelido );
+		if( !listaDeUsuarios.getUsuarios().contains( apelido ) ){
+			listaDeUsuarios.adicionarUsuario( apelido );
+		}
 	}
 
 	@Override
